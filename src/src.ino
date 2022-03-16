@@ -3,7 +3,7 @@
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
  
-const char* ssid = "*****"; //Wifi SSID
+const char* ssid = "******"; //Wifi SSID
 const char* password = "******"; //Wifi Password
 
 //TODO: implement encoder based movement
@@ -11,6 +11,8 @@ const int leftForward = 14; //yellow motor wire
 const int leftReverse = 12; //red motor wire
 const int rightForward = 5; //blue motor wire
 const int rightReverse = 4; //green motor wire
+const int rightWheelEncoder = 9; //right wheel encoder input
+const int leftWheelEncoder = 10; //left wheel encoder input
 
 ESP8266WebServer server(80);
 
@@ -38,6 +40,24 @@ void moveLeft(){
   digitalWrite(rightForward,LOW);
   }  
 
+void moveRightPrecise(){
+  int count = 20;
+  byte currentState;
+  byte lastState  = digitalRead(rightWheelEncoder);
+  digitalWrite(leftReverse,HIGH);
+  digitalWrite(rightForward,HIGH);
+  while(count >=0){
+     currentState = digitalRead(rightWheelEncoder);
+    if(lastState != currentState){
+      count--;
+      lastState = currentState;
+      }
+      
+    }
+    digitalWrite(leftReverse,LOW);
+    digitalWrite(rightForward,LOW); 
+  }
+  
 void moveRight(){
   digitalWrite(rightReverse,HIGH);
   digitalWrite(leftForward,HIGH);
@@ -56,6 +76,9 @@ void setup() {
   pinMode(leftReverse, OUTPUT);
   pinMode(rightForward, OUTPUT);
   pinMode(rightReverse, OUTPUT);
+  pinMode(rightWheelEncoder,INPUT);
+  pinMode(leftWheelEncoder,INPUT);
+  //Initialize serial debug output
   Serial.begin(115200);  
   //Connect to WIFI
   WiFi.begin(ssid, password);
@@ -89,9 +112,15 @@ void setup() {
     server.send(200, "text/html", "Turning Left");
     moveLeft();
   });
+  
   server.on("/right", [](){
     server.send(200, "text/html", "Turning Right");
     moveRight();
+  });
+
+   server.on("/rightprecise", [](){
+    server.send(200, "text/html", "Turning Right");
+    moveRightPrecise();
   });
   
   server.begin();
