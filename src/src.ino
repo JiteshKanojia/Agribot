@@ -14,7 +14,23 @@ const int rightReverse = 4; //green motor wire
 const int rightWheelEncoder = 9; //right wheel encoder input
 const int leftWheelEncoder = 10; //left wheel encoder input
 
+volatile unsigned int leftTickCount;
+volatile unsigned int rightTickCount;
+
 ESP8266WebServer server(80);
+
+////ISR for Wheel Encoders
+
+IRAM_ATTR void detectLeftTick(){
+  leftTickCount++;
+  Serial.println(leftTickCount);
+  }
+
+IRAM_ATTR void detectRightTick(){
+  rightTickCount++;
+  Serial.println(rightTickCount);
+  }  
+///////////////////////////////////////
 
 void moveForward(){
   digitalWrite(leftForward,HIGH);
@@ -41,21 +57,6 @@ void moveLeft(){
   }  
 
 void moveRightPrecise(){
-  int count = 20;
-  byte currentState;
-  byte lastState  = digitalRead(rightWheelEncoder);
-  digitalWrite(leftReverse,HIGH);
-  digitalWrite(rightForward,HIGH);
-  while(count >=0){
-     currentState = digitalRead(rightWheelEncoder);
-    if(lastState != currentState){
-      count--;
-      lastState = currentState;
-      }
-      
-    }
-    digitalWrite(leftReverse,LOW);
-    digitalWrite(rightForward,LOW); 
   }
   
 void moveRight(){
@@ -71,13 +72,14 @@ void handleNotFound(){
   }
   
 void setup() {
-  // put your setup code here, to run once:
   pinMode(leftForward, OUTPUT);
   pinMode(leftReverse, OUTPUT);
   pinMode(rightForward, OUTPUT);
   pinMode(rightReverse, OUTPUT);
   pinMode(rightWheelEncoder,INPUT);
   pinMode(leftWheelEncoder,INPUT);
+  attachInterrupt(digitalPinToInterrupt(leftWheelEncoder),detectLeftTick,CHANGE);
+  attachInterrupt(digitalPinToInterrupt(rightWheelEncoder),detectRightTick,CHANGE);
   //Initialize serial debug output
   Serial.begin(115200);  
   //Connect to WIFI
