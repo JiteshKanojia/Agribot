@@ -3,8 +3,8 @@
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
  
-const char* ssid = "******"; //Wifi SSID
-const char* password = "******"; //Wifi Password
+const char* ssid = "JITESH"; //Wifi SSID
+const char* password = "VengefulONE_1"; //Wifi Password
 
 //TODO: implement encoder based movement
 const int leftForward = 14; //yellow motor wire
@@ -14,8 +14,8 @@ const int rightReverse = 4; //green motor wire
 const int rightWheelEncoder = 9; //right wheel encoder input
 const int leftWheelEncoder = 10; //left wheel encoder input
 
-volatile unsigned int leftTickCount;
-volatile unsigned int rightTickCount;
+volatile unsigned long int leftTickCount;
+volatile unsigned long int rightTickCount;
 
 ESP8266WebServer server(80);
 
@@ -23,50 +23,74 @@ ESP8266WebServer server(80);
 
 IRAM_ATTR void detectLeftTick(){
   leftTickCount++;
-  Serial.println(leftTickCount);
+  //Serial.println(leftTickCount);
   }
 
 IRAM_ATTR void detectRightTick(){
   rightTickCount++;
-  Serial.println(rightTickCount);
+  //Serial.println(rightTickCount);
   }  
 ///////////////////////////////////////
-
-void moveForward(){
+void moveForwardPrecise(int numberOfTicks){
+  unsigned long int ticksToMoveLeft = leftTickCount + numberOfTicks;
+  unsigned long int ticksToMoveRight = leftTickCount + numberOfTicks;
+  
   digitalWrite(leftForward,HIGH);
   digitalWrite(rightForward,HIGH);
-  delay(500);
-  digitalWrite(leftForward,LOW);
-  digitalWrite(rightForward,LOW);
+  while(true){
+      if(leftTickCount >= ticksToMoveLeft && rightTickCount >= ticksToMoveRight){
+        digitalWrite(leftForward,LOW);
+        digitalWrite(rightForward,LOW);
+        return;    
+        }        
+    }
+
   }
   
-void moveReverse(){
-   digitalWrite(leftReverse,HIGH);
-   digitalWrite(rightReverse,HIGH);
-   delay(500);
-   digitalWrite(leftReverse,LOW);
-   digitalWrite(rightReverse,LOW);
-  }
+void moveReversePrecise(int numberOfTicks){
+  unsigned long int ticksToMoveLeft = leftTickCount + numberOfTicks;
+  unsigned long int ticksToMoveRight = leftTickCount + numberOfTicks;
   
-void moveLeft(){
   digitalWrite(leftReverse,HIGH);
-  digitalWrite(rightForward,HIGH);
-  delay(1000);
-  digitalWrite(leftReverse,LOW);
-  digitalWrite(rightForward,LOW);
+  digitalWrite(rightReverse,HIGH);
+  while(true){
+      if(leftTickCount >= ticksToMoveLeft && rightTickCount >= ticksToMoveRight){
+        digitalWrite(leftReverse,LOW);
+        digitalWrite(rightReverse,LOW);
+        return;    
+        }        
+    }
+
   }  
 
-void moveRightPrecise(){
-  }
+void turnRightPrecise(int numberOfTicks){
+  unsigned long int ticksToMoveLeft = leftTickCount + numberOfTicks;
   
-void moveRight(){
   digitalWrite(rightReverse,HIGH);
   digitalWrite(leftForward,HIGH);
-  delay(1000);
-  digitalWrite(rightReverse,LOW);
-  digitalWrite(leftForward,LOW);
+  while(true){
+      if(leftTickCount >= ticksToMoveLeft){
+        digitalWrite(rightReverse,LOW);
+        digitalWrite(leftForward,LOW);
+        return;    
+        }        
+    }
+  }
+  
+void turnLeftPrecise(int numberOfTicks){
+  unsigned long int ticksToMoveRight = rightTickCount + numberOfTicks;
+  
+  digitalWrite(leftReverse,HIGH);
+  digitalWrite(rightForward,HIGH);
+  while(true){
+      if(rightTickCount >= ticksToMoveRight){
+        digitalWrite(leftReverse,LOW);
+        digitalWrite(rightForward,LOW);
+        return;    
+        }        
+    }
   }  
-
+  
 void handleNotFound(){
   server.send(404,"text/plain","Command not found");
   }
@@ -78,8 +102,8 @@ void setup() {
   pinMode(rightReverse, OUTPUT);
   pinMode(rightWheelEncoder,INPUT);
   pinMode(leftWheelEncoder,INPUT);
-  attachInterrupt(digitalPinToInterrupt(leftWheelEncoder),detectLeftTick,CHANGE);
-  attachInterrupt(digitalPinToInterrupt(rightWheelEncoder),detectRightTick,CHANGE);
+  attachInterrupt(digitalPinToInterrupt(leftWheelEncoder),detectLeftTick,FALLING);
+  attachInterrupt(digitalPinToInterrupt(rightWheelEncoder),detectRightTick,FALLING);
   //Initialize serial debug output
   Serial.begin(115200);  
   //Connect to WIFI
@@ -101,28 +125,23 @@ void setup() {
   });
   
   server.on("/forward", [](){
-    server.send(200, "text/html", "Moving Forward");
-    moveForward();
+    server.send(200, "text/html", "OK");
+    moveForwardPrecise(11);
   });
 
   server.on("/reverse", [](){
-    server.send(200, "text/html", "Moving Reverse");
-    moveReverse();
+    server.send(200, "text/html", "OK");
+    moveReversePrecise(15);
   });
   
   server.on("/left", [](){
-    server.send(200, "text/html", "Turning Left");
-    moveLeft();
+    server.send(200, "text/html", "OK");
+    turnLeftPrecise(18);
   });
   
   server.on("/right", [](){
-    server.send(200, "text/html", "Turning Right");
-    moveRight();
-  });
-
-   server.on("/rightprecise", [](){
-    server.send(200, "text/html", "Turning Right");
-    moveRightPrecise();
+    server.send(200, "text/html", "OK");
+    turnRightPrecise(18);
   });
   
   server.begin();
@@ -132,4 +151,5 @@ void setup() {
 void loop(){
   server.handleClient();
   MDNS.update();
+  //Serial.println("OK");
   }
