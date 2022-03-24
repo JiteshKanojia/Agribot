@@ -3,8 +3,8 @@
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
  
-const char* ssid = "JITESH"; //Wifi SSID
-const char* password = "*******"; //Wifi Password
+const char* ssid = "TP-LINK_469A"; //Wifi SSID
+const char* password = "30052314"; //Wifi Password
 
 //TODO: implement encoder based movement
 const int leftForward = 14; //yellow motor wire
@@ -14,7 +14,7 @@ const int rightReverse = 4; //green motor wire
 const int rightWheelEncoder = 9; //right wheel encoder input
 const int leftWheelEncoder = 10; //left wheel encoder input
 const int leftPump = 13;   //Left motorpump output
-const int rightPump = 15;  //Riht motorpump output
+const int rightPump = 15;  //Right motorpump output
 
 volatile unsigned long int leftTickCount;
 volatile unsigned long int rightTickCount;
