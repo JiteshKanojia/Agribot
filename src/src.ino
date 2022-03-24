@@ -4,7 +4,7 @@
 #include <ESP8266mDNS.h>
  
 const char* ssid = "JITESH"; //Wifi SSID
-const char* password = "VengefulONE_1"; //Wifi Password
+const char* password = "*******"; //Wifi Password
 
 //TODO: implement encoder based movement
 const int leftForward = 14; //yellow motor wire
@@ -13,6 +13,8 @@ const int rightForward = 5; //blue motor wire
 const int rightReverse = 4; //green motor wire
 const int rightWheelEncoder = 9; //right wheel encoder input
 const int leftWheelEncoder = 10; //left wheel encoder input
+const int leftPump = 13;   //Left motorpump output
+const int rightPump = 15;  //Riht motorpump output
 
 volatile unsigned long int leftTickCount;
 volatile unsigned long int rightTickCount;
@@ -89,7 +91,54 @@ void turnLeftPrecise(int numberOfTicks){
         return;    
         }        
     }
-  }  
+  }
+void activateLeftPump(){
+  const long interval = 1000;
+  unsigned long previousMillis = 0;
+  while(true){
+    unsigned long currentMillis = millis();
+    if(currentMillis - previousMillis >= interval){      
+      previousMillis = currentMillis;
+      digitalWrite(leftPump, HIGH);
+    }else{
+      digitalWrite(leftPump, LOW);    
+      return;
+      }  
+    }
+  }
+      
+void activateRightPump(){
+  const long interval = 1000;
+  unsigned long previousMillis = 0;
+  while(true){
+    unsigned long currentMillis = millis();
+    if(currentMillis - previousMillis >= interval){      
+      previousMillis = currentMillis;
+      digitalWrite(rightPump, HIGH);
+    }else{
+      digitalWrite(rightPump, LOW);    
+      return;
+      }  
+    }
+  }    
+
+void activateBothPump(){
+  const long interval = 1000;
+  unsigned long previousMillis = 0;
+  while(true){
+    unsigned long currentMillis = millis();
+    if(currentMillis - previousMillis >= interval){      
+      previousMillis = currentMillis;
+      digitalWrite(leftPump, HIGH);
+      digitalWrite(rightPump, HIGH);
+    }else{
+      digitalWrite(leftPump, LOW);
+      digitalWrite(rightPump, LOW);    
+      return;
+      }  
+    }
+  }    
+    
   
 void handleNotFound(){
   server.send(404,"text/plain","Command not found");
@@ -102,6 +151,8 @@ void setup() {
   pinMode(rightReverse, OUTPUT);
   pinMode(rightWheelEncoder,INPUT);
   pinMode(leftWheelEncoder,INPUT);
+  pinMode(leftPump, OUTPUT);
+  pinMode(rightPump, OUTPUT);
   attachInterrupt(digitalPinToInterrupt(leftWheelEncoder),detectLeftTick,FALLING);
   attachInterrupt(digitalPinToInterrupt(rightWheelEncoder),detectRightTick,FALLING);
   //Initialize serial debug output
@@ -142,6 +193,21 @@ void setup() {
   server.on("/right", [](){
     server.send(200, "text/html", "OK");
     turnRightPrecise(18);
+  });
+
+  server.on("/sprayleft", [](){
+    server.send(200, "text/html", "OK");
+    activateLeftPump();
+  });
+  
+  server.on("/sprayright", [](){
+    server.send(200, "text/html", "OK");
+    activateRightPump();
+  });
+
+  server.on("/sprayboth", [](){
+    server.send(200, "text/html", "OK");
+    activateBothPump();
   });
   
   server.begin();
