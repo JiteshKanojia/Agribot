@@ -35,11 +35,12 @@ IRAM_ATTR void detectRightTick(){
 ///////////////////////////////////////
 void moveForwardPrecise(int numberOfTicks){
   unsigned long int ticksToMoveLeft = leftTickCount + numberOfTicks;
-  unsigned long int ticksToMoveRight = leftTickCount + numberOfTicks;
+  unsigned long int ticksToMoveRight = rightTickCount + numberOfTicks;
   
   digitalWrite(leftForward,HIGH);
   digitalWrite(rightForward,HIGH);
   while(true){
+      ///TODO: Remove &
       if(leftTickCount >= ticksToMoveLeft && rightTickCount >= ticksToMoveRight){
         digitalWrite(leftForward,LOW);
         digitalWrite(rightForward,LOW);
@@ -51,11 +52,12 @@ void moveForwardPrecise(int numberOfTicks){
   
 void moveReversePrecise(int numberOfTicks){
   unsigned long int ticksToMoveLeft = leftTickCount + numberOfTicks;
-  unsigned long int ticksToMoveRight = leftTickCount + numberOfTicks;
+  unsigned long int ticksToMoveRight = rightTickCount + numberOfTicks;
   
   digitalWrite(leftReverse,HIGH);
   digitalWrite(rightReverse,HIGH);
   while(true){
+      ///TODO: Remove &
       if(leftTickCount >= ticksToMoveLeft && rightTickCount >= ticksToMoveRight){
         digitalWrite(leftReverse,LOW);
         digitalWrite(rightReverse,LOW);
@@ -93,50 +95,24 @@ void turnLeftPrecise(int numberOfTicks){
     }
   }
 void activateLeftPump(){
-  const long interval = 1000;
-  unsigned long previousMillis = 0;
-  while(true){
-    unsigned long currentMillis = millis();
-    if(currentMillis - previousMillis >= interval){      
-      previousMillis = currentMillis;
+
       digitalWrite(leftPump, HIGH);
-    }else{
-      digitalWrite(leftPump, LOW);    
-      return;
-      }  
-    }
+      delay(1000);
+      digitalWrite(leftPump, LOW);
   }
       
 void activateRightPump(){
-  const long interval = 1000;
-  unsigned long previousMillis = 0;
-  while(true){
-    unsigned long currentMillis = millis();
-    if(currentMillis - previousMillis >= interval){      
-      previousMillis = currentMillis;
-      digitalWrite(rightPump, HIGH);
-    }else{
-      digitalWrite(rightPump, LOW);    
-      return;
-      }  
-    }
+    digitalWrite(rightPump, HIGH);
+    delay(1000);
+    digitalWrite(rightPump, LOW);
   }    
 
 void activateBothPump(){
-  const long interval = 1000;
-  unsigned long previousMillis = 0;
-  while(true){
-    unsigned long currentMillis = millis();
-    if(currentMillis - previousMillis >= interval){      
-      previousMillis = currentMillis;
-      digitalWrite(leftPump, HIGH);
-      digitalWrite(rightPump, HIGH);
-    }else{
-      digitalWrite(leftPump, LOW);
-      digitalWrite(rightPump, LOW);    
-      return;
-      }  
-    }
+  digitalWrite(leftPump, HIGH);
+  digitalWrite(rightPump, HIGH);
+  delay(1000);
+  digitalWrite(leftPump, LOW);
+  digitalWrite(rightPump, LOW);
   }    
     
   
